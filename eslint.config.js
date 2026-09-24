@@ -39,5 +39,10 @@ export default [
     languageOptions: {
       parser: tseslint.parser,
     },
+    rules: {
+      // Keep TypeScript source formatting consistent without imposing it on generated extension/config files.
+      quotes: ["error", "single", { avoidEscape: true }],
+      semi: ["error", "always"],
+    },
   },
 ];

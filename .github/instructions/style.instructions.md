@@ -52,3 +52,14 @@ ALL UI components MUST use dark theme colors:
 - Smooth transitions: `transition-all duration-200 ease-in-out`
 - Shadows for depth: `shadow-md`, `shadow-lg`, `shadow-xl`
 - Focus states for accessibility: `focus:ring-2 focus:ring-blue-500`
+
+## TypeScript formatting
+
+When writing TypeScript in `.astro` frontmatter or adjacent source:
+
+- Use single quotes for strings, except when avoiding escaping improves readability.
+- End statements with semicolons.
+- Use trailing commas in multiline objects, arrays, imports, and function parameters.
+- Keep formatting consistent with the surrounding file; do not reformat unrelated code.
+
+ESLint enforces the quote and semicolon rules in TypeScript files. Comments should explain styling intent or non-obvious constraints, not restate utility classes.

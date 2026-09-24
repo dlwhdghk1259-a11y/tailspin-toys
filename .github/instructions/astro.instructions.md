@@ -32,6 +32,25 @@ const games = await getAllGames(getDatabase());
 </Layout>
 ```
 
+### Component contracts
+
+- Every reusable `.astro` component must define a frontmatter `Props` interface.
+- Document the `Props` interface with a short TSDoc comment describing the component contract.
+- Document each prop whose purpose, accepted values, default, or accessibility impact is not obvious from its type.
+- Keep the contract comment current when props or rendered behavior change.
+
+```astro
+---
+/** The content and heading presented by the page hero. */
+interface Props {
+  /** Main heading shown to visitors. */
+  title: string;
+  /** Optional supporting copy below the heading. */
+  description?: string;
+}
+---
+```
+
 ## Layouts
 
 - Create reusable layout components in `src/layouts/`
@@ -110,6 +129,8 @@ There is no Svelte/React layer. When a page genuinely needs client behaviour, ad
 
 - Use TypeScript for type-safe props
 - Define `Props` interface in frontmatter
+- Use explicit types for component props and exported helpers
+- Prefer readable, consistent formatting: single quotes, semicolons, and trailing commas in multiline structures
 - Type component imports and helper return values
 - Run `npx astro sync` to (re)generate route/content types before linting or type-checking
 - `.astro` files are type-checked by `npm run typecheck:astro` (which runs `astro sync` then `astro check`), on the classic `typescript` package. The pure TypeScript in `db/`, `src/lib/`, and `src/types/` is type-checked separately by `npm run typecheck` (the native TS 7 compiler, `tsgo`), which does **not** process `.astro` files.
@@ -120,3 +141,4 @@ There is no Svelte/React layer. When a page genuinely needs client behaviour, ad
 - Minimize client-side JavaScript — the default is zero JS shipped
 - Import and use global CSS styles from layouts
 - Always include a `data-testid` on interactive elements (see `ui.instructions.md`)
+- Add comments only for intent or non-obvious decisions; do not narrate template markup

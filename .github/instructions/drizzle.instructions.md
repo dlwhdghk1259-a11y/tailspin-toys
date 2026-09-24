@@ -51,6 +51,26 @@ export async function getAllGameIds(db: Database): Promise<number[]> {
 }
 ```
 
+### Exported API documentation
+
+- Every exported function in `db/**/*.ts` and `src/lib/*.ts` must have a TSDoc/JSDoc comment immediately above it.
+- The comment must describe the function's purpose, every parameter (including the injectable `db` parameter), and the returned value. Use `@param` and `@returns` tags when they make the contract clearer.
+- Keep the injectable `db` argument explicit in both the signature and its documentation so the production-versus-test boundary remains clear.
+- Document important ordering, nullability, determinism, and error behavior when callers rely on it.
+- Do not use comments to paraphrase SQL, a straightforward mapping, or the function name. Explain intent and constraints instead.
+- Update or remove comments in the same change as the code they describe; stale documentation is a correctness issue.
+
+```ts
+/**
+ * Returns all games in stable title order for deterministic static pages.
+ * @param db The injectable database used for the query.
+ * @returns The game IDs ordered by title.
+ */
+export async function getAllGameIds(db: Database): Promise<number[]> {
+  // ...
+}
+```
+
 - Always `order by` a stable column (title) so static builds are deterministic.
 - Map raw rows to the app-facing `Game`/`Publisher`/`Category` types in one place; don't leak Drizzle row shapes into components.
 - Keep ordering/lookup logic in `games.ts`, not in pages.
@@ -70,3 +90,8 @@ Node.js 22.13 or later is required because the data layer uses the built-in `nod
 ## Type checking
 
 The data layer (`db/**/*.ts`, `src/lib/*.ts`) is type-checked by `npm run typecheck`, which runs the native **TypeScript 7** compiler (`tsgo`, from `@typescript/native-preview`) against `tsconfig.tsgo.json`. Keep helpers exported with explicit parameter and return types so `tsgo` can verify them. Linting is unaffected — ESLint + `typescript-eslint` still run on the classic `typescript` package.
+
+## Comments and formatting
+
+- Prefer TSDoc/JSDoc for exported APIs; use inline comments only for non-obvious intent or decisions.
+- Follow the repository TypeScript formatting rules: single quotes, semicolons, and trailing commas in multiline structures. ESLint enforces the quote and semicolon rules for TypeScript files.
