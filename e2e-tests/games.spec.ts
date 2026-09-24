@@ -1,6 +1,54 @@
 import { test, expect, type Response } from '@playwright/test';
 
 test.describe('Game Listing and Navigation', () => {
+  test('should filter games by category and publisher together', async ({ page }) => {
+    await page.goto('/');
+
+    const categoryFilter = page.getByTestId('category-filter');
+    const publisherFilter = page.getByTestId('publisher-filter');
+    await expect(categoryFilter).toBeVisible();
+    await expect(publisherFilter).toBeVisible();
+
+    await test.step('Filter by the Strategy category', async () => {
+      await categoryFilter.selectOption({ label: 'Strategy' });
+      await expect(page.getByTestId('filter-result-count')).toHaveText('Showing 4 games');
+      await expect(page.locator('[data-testid="game-card"]:not(.hidden)')).toHaveCount(4);
+    });
+
+    await test.step('Combine category and publisher filters', async () => {
+      await publisherFilter.selectOption({ label: 'CodeForge Studios' });
+      await expect(page.getByTestId('filter-result-count')).toHaveText('Showing 1 game');
+      await expect(page.locator('[data-testid="game-card"]:not(.hidden)')).toHaveCount(1);
+      await expect(page.locator('[data-testid="game-card"]:not(.hidden)').getByTestId('game-title')).toHaveText('DevOps Dominion');
+    });
+  });
+
+  test('should clear filters and show an empty state for no matches', async ({ page }) => {
+    await page.goto('/');
+
+    await test.step('Select a category and publisher with no matching game', async () => {
+      await page.getByTestId('category-filter').selectOption({ label: 'Strategy' });
+      await page.getByTestId('publisher-filter').selectOption({ label: 'CodeForge Studios' });
+      await expect(page.getByTestId('filter-result-count')).toHaveText('Showing 1 game');
+    });
+
+    await test.step('Show the no-results state', async () => {
+      await page.getByTestId('publisher-filter').evaluate((select) => {
+        const option = new Option('No matching publisher', '99999');
+        (select as HTMLSelectElement).add(option);
+      });
+      await page.getByTestId('publisher-filter').selectOption('99999');
+      await expect(page.getByTestId('filter-result-count')).toHaveText('Showing 0 games');
+      await expect(page.getByTestId('filtered-empty-state')).toBeVisible();
+    });
+
+    await test.step('Clear all filters', async () => {
+      await page.getByTestId('clear-filters').click();
+      await expect(page.getByTestId('filter-result-count')).toHaveText('Showing 21 games');
+      await expect(page.getByTestId('games-grid')).toBeVisible();
+    });
+  });
+
   test('should display games with titles on index page', async ({ page }) => {
     await test.step('Navigate to homepage', async () => {
       await page.goto('/');

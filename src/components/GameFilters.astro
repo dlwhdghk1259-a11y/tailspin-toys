@@ -1,0 +1,68 @@
+---
+import type { Category, Publisher } from '../types/game';
+
+interface Props {
+    /** Categories and publishers available in the static catalog. */
+    categories: Category[];
+    publishers: Publisher[];
+}
+
+const { categories, publishers } = Astro.props;
+---
+
+<form
+    id="game-filters"
+    class="mb-8 grid gap-4 rounded-xl border border-slate-700 bg-slate-800/60 p-5 md:grid-cols-[1fr_1fr_auto] md:items-end"
+    data-testid="game-filters"
+>
+    <div>
+        <label for="category-filter" class="mb-2 block text-sm font-medium text-slate-200">
+            Categories
+        </label>
+        <select
+            id="category-filter"
+            name="categories"
+            multiple
+            size={Math.min(Math.max(categories.length, 3), 6)}
+            class="min-h-24 w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-slate-100 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            data-testid="category-filter"
+            aria-describedby="category-filter-help"
+        >
+            {categories.map((category) => (
+                <option value={category.id} data-testid={`category-option-${category.id}`}>
+                    {category.name}
+                </option>
+            ))}
+        </select>
+        <p id="category-filter-help" class="mt-1 text-xs text-slate-400">
+            Hold Ctrl or Command to select more than one.
+        </p>
+    </div>
+
+    <div>
+        <label for="publisher-filter" class="mb-2 block text-sm font-medium text-slate-200">
+            Publisher
+        </label>
+        <select
+            id="publisher-filter"
+            name="publisher"
+            class="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-slate-100 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            data-testid="publisher-filter"
+        >
+            <option value="">All publishers</option>
+            {publishers.map((publisher) => (
+                <option value={publisher.id} data-testid={`publisher-option-${publisher.id}`}>
+                    {publisher.name}
+                </option>
+            ))}
+        </select>
+    </div>
+
+    <button
+        type="reset"
+        class="rounded-lg border border-slate-600 px-4 py-2 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+        data-testid="clear-filters"
+    >
+        Clear filters
+    </button>
+</form>

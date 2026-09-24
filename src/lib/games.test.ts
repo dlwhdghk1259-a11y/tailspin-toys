@@ -4,6 +4,8 @@ import { categories, publishers, games } from '../../db/schema';
 import type { Database } from './db';
 import {
     getAllGames,
+    getAllCategories,
+    getAllPublishers,
     getAllGameIds,
     getGameById,
 } from './games';
@@ -50,6 +52,85 @@ describe('games data-access helpers', () => {
         const ids = await getAllGameIds(db);
         const all = await getAllGames(db);
         expect(ids).toEqual(all.map((g) => g.id));
+    });
+
+    it('filters games by one or more categories and a publisher', async () => {
+        const [strategy, puzzle] = await db
+            .insert(categories)
+            .values([
+                { name: 'Strategy', description: 'strategy' },
+                { name: 'Puzzle', description: 'puzzle' },
+            ])
+            .returning({ id: categories.id, name: categories.name });
+        const [firstPublisher, secondPublisher] = await db
+            .insert(publishers)
+            .values([
+                { name: 'Alpha Games', description: 'alpha' },
+                { name: 'Beta Games', description: 'beta' },
+            ])
+            .returning({ id: publishers.id, name: publishers.name });
+
+        await db.insert(games).values([
+            {
+                title: 'Puzzle Alpha',
+                description: 'Puzzle',
+                starRating: 4,
+                categoryId: puzzle.id,
+                publisherId: firstPublisher.id,
+            },
+            {
+                title: 'Strategy Alpha',
+                description: 'Strategy',
+                starRating: 4,
+                categoryId: strategy.id,
+                publisherId: firstPublisher.id,
+            },
+            {
+                title: 'Strategy Beta',
+                description: 'Strategy',
+                starRating: 4,
+                categoryId: strategy.id,
+                publisherId: secondPublisher.id,
+            },
+        ]);
+
+        expect((await getAllGames(db, { categoryIds: [strategy.id] })).map((g) => g.title)).toEqual([
+            'Strategy Alpha',
+            'Strategy Beta',
+        ]);
+        expect((await getAllGames(db, { categoryIds: [strategy.id, puzzle.id] })).map((g) => g.title)).toEqual([
+            'Puzzle Alpha',
+            'Strategy Alpha',
+            'Strategy Beta',
+        ]);
+        expect(
+            (await getAllGames(db, {
+                categoryIds: [strategy.id],
+                publisherId: secondPublisher.id,
+            })).map((g) => g.title),
+        ).toEqual(['Strategy Beta']);
+    });
+
+    it('returns no games when filters do not match', async () => {
+        await seedGames(db, 2);
+        expect(await getAllGames(db, { categoryIds: [99999] })).toEqual([]);
+    });
+
+    it('returns filter options ordered by name', async () => {
+        await db.insert(categories).values([
+            { name: 'Zeta', description: 'z' },
+            { name: 'Alpha', description: 'a' },
+        ]);
+        await db.insert(publishers).values([
+            { name: 'Zeta Press', description: 'z' },
+            { name: 'Alpha Press', description: 'a' },
+        ]);
+
+        expect((await getAllCategories(db)).map((item) => item.name)).toEqual(['Alpha', 'Zeta']);
+        expect((await getAllPublishers(db)).map((item) => item.name)).toEqual([
+            'Alpha Press',
+            'Zeta Press',
+        ]);
     });
 
     it('fetches a single game by id', async () => {
